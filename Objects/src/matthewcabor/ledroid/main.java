@@ -370,7 +370,7 @@ mostCurrent._ipaddresstext.setText(BA.ObjectToCharSequence(_ipaddress));
  //BA.debugLineNum = 36;BA.debugLine="IPAddressLabel.Text = IPAddress";
 mostCurrent._ipaddresslabel.setText(BA.ObjectToCharSequence(_ipaddress));
  //BA.debugLineNum = 37;BA.debugLine="Log(\"Width: \" & Activity.Width & \", Height: \" & A";
-anywheresoftware.b4a.keywords.Common.LogImpl("4131077","Width: "+BA.NumberToString(mostCurrent._activity.getWidth())+", Height: "+BA.NumberToString(mostCurrent._activity.getHeight()),0);
+anywheresoftware.b4a.keywords.Common.LogImpl("7131077","Width: "+BA.NumberToString(mostCurrent._activity.getWidth())+", Height: "+BA.NumberToString(mostCurrent._activity.getHeight()),0);
  //BA.debugLineNum = 38;BA.debugLine="End Sub";
 return "";
 }
@@ -483,10 +483,10 @@ public static String  _jobdone(anywheresoftware.b4a.samples.httputils2.httpjob _
  //BA.debugLineNum = 114;BA.debugLine="If job.Success Then";
 if (_job._success) { 
  //BA.debugLineNum = 115;BA.debugLine="Log(\"Response from server: \" & job.GetString)";
-anywheresoftware.b4a.keywords.Common.LogImpl("4917506","Response from server: "+_job._getstring(),0);
+anywheresoftware.b4a.keywords.Common.LogImpl("71310722","Response from server: "+_job._getstring(),0);
  }else {
  //BA.debugLineNum = 117;BA.debugLine="Log(\"Error: \" & job.ErrorMessage)";
-anywheresoftware.b4a.keywords.Common.LogImpl("4917508","Error: "+_job._errormessage,0);
+anywheresoftware.b4a.keywords.Common.LogImpl("71310724","Error: "+_job._errormessage,0);
  };
  //BA.debugLineNum = 119;BA.debugLine="job.Release";
 _job._release();
