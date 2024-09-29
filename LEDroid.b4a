@@ -1,0 +1,134 @@
+﻿Build1=Default,matthewcabor.ledroid
+File1=Layout.bal
+FileGroup1=Default Group
+Group=Default Group
+Library1=core
+Library2=http
+Library3=httputils2
+ManifestCode=AddManifestText(~\n~<uses-sdk android:minSdkVersion="4" android:targetSdkVersion="19"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>)~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")
+Module1=Starter
+NumberOfFiles=1
+NumberOfLibraries=3
+NumberOfModules=1
+Version=13
+@EndOfDesignText@
+#Region  Project Attributes 
+	#ApplicationLabel: LEDroid
+	#VersionCode: 1
+	#VersionName: 1.0.0
+	#SupportedOrientations: unspecified
+	#CanInstallToExternalStorage: False
+#End Region
+#Region  Activity Attributes 
+	#FullScreen: False
+	#IncludeTitle: True
+#End Region
+Sub Process_Globals
+	Dim brightness As Int = 20
+	Dim IPAddress As String = "192.168.1.5"
+End Sub
+Sub Globals
+	Dim EditIPButton As Button
+	Dim IPAddressText As EditText
+	Dim IPAddressLabel As Label
+	Dim PowerButton As Button
+	Dim IncreaseBrightnessButton As Button
+	Dim DecreaseBrightnessButton As Button
+	Dim SetRedButton As Button
+	Dim SetGreenButton As Button
+	Dim SetBlueButton As Button
+	Dim SetCyanButton As Button
+	Dim SetMagentaButton As Button
+	Dim SetYellowButton As Button
+	Dim SetWhiteButton As Button
+	Dim SetOrangeButton As Button
+End Sub
+Sub Activity_Create(FirstTime As Boolean)
+	Activity.LoadLayout("Layout")
+	Activity.Title = "LEDroid Remote for WLED"
+	IPAddressText.Text = IPAddress
+	IPAddressLabel.Text = IPAddress
+	Log("Width: " & Activity.Width & ", Height: " & Activity.Height)
+End Sub
+Sub Activity_Resume
+
+End Sub
+Sub Activity_Pause (UserClosed As Boolean)
+
+End Sub
+
+Sub EditIPButton_Click
+	IPAddressLabel.Visible = False
+	IPAddressText.Visible = True
+	IPAddressText.Enabled = True
+End Sub
+
+Sub IPAddressText_TextChanged (OldText As String, NewText As String)
+	IPAddress = NewText
+End Sub
+Sub IPAddressText_EnterPressed
+	IPAddressText.Enabled = False
+	IPAddressText.Visible = False
+	IPAddressLabel.Visible = True
+	IPAddressLabel.Text = IPAddress
+End Sub
+
+Sub PowerButton_Click
+	SendGetRequest("http://" & IPAddress & "/win&T=2")
+End Sub
+
+Sub IncreaseBrightnessButton_Click
+	If brightness < 20 Then
+		brightness = Min(255, brightness + 2)
+	Else
+		brightness = Min(255, brightness + 15)
+	End If
+	SendGetRequest("http://" & IPAddress & "/win&T=1&A=" & brightness)
+End Sub
+Sub DecreaseBrightnessButton_Click
+	If brightness < 20 Then
+		brightness = Max(0, brightness - 2)
+	Else
+		brightness = Max(0, brightness - 15)
+	End If
+	SendGetRequest("http://" & IPAddress & "/win&T=1&A=" & brightness)
+End Sub
+
+Sub SetRedButton_Click
+	SendGetRequest("http://" & IPAddress & "/win&T=1&R=255&G=0&B=0")
+End Sub
+Sub SetGreenButton_Click
+	SendGetRequest("http://" & IPAddress & "/win&T=1&R=0&G=255&B=0")
+End Sub
+Sub SetBlueButton_Click
+	SendGetRequest("http://" & IPAddress & "/win&T=1&R=0&G=0&B=255")
+End Sub
+Sub SetCyanButton_Click
+	SendGetRequest("http://" & IPAddress & "/win&T=1&R=0&G=255&B=255")
+End Sub
+Sub SetMagentaButton_Click
+	SendGetRequest("http://" & IPAddress & "/win&T=1&R=255&G=0&B=255")
+End Sub
+Sub SetYellowButton_Click
+	SendGetRequest("http://" & IPAddress & "/win&T=1&R=255&G=255&B=0")
+End Sub
+Sub SetWhiteButton_Click
+	SendGetRequest("http://" & IPAddress & "/win&T=1&R=255&G=255&B=255")
+End Sub
+Sub SetOrangeButton_Click
+	SendGetRequest("http://" & IPAddress & "/win&T=1&R=255&G=165&B=0")
+End Sub
+
+Sub SendGetRequest(url As String)
+	Dim job As HttpJob
+	job.Initialize("job1", Me)
+	job.Download(url)
+End Sub
+Sub JobDone (job As HttpJob)
+	If job.Success Then
+		Log("Response from server: " & job.GetString)
+	Else
+		Log("Error: " & job.ErrorMessage)
+	End If
+	job.Release
+End Sub
