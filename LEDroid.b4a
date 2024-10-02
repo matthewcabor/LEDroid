@@ -5,17 +5,18 @@ Group=Default Group
 Library1=core
 Library2=http
 Library3=httputils2
+Library4=xml2map
 ManifestCode=AddManifestText(~\n~<uses-sdk android:minSdkVersion="4" android:targetSdkVersion="19"/>~\n~<supports-screens android:largeScreens="true" ~\n~    android:normalScreens="true" ~\n~    android:smallScreens="true" ~\n~    android:anyDensity="true"/>)~\n~SetApplicationAttribute(android:icon, "@drawable/icon")~\n~SetApplicationAttribute(android:label, "$LABEL$")
 Module1=Starter
 NumberOfFiles=1
-NumberOfLibraries=3
+NumberOfLibraries=4
 NumberOfModules=1
 Version=13
 @EndOfDesignText@
 #Region  Project Attributes 
 	#ApplicationLabel: LEDroid
 	#VersionCode: 1
-	#VersionName: 1.0.0
+	#VersionName: 1.1.0
 	#SupportedOrientations: unspecified
 	#CanInstallToExternalStorage: False
 #End Region
@@ -24,8 +25,9 @@ Version=13
 	#IncludeTitle: True
 #End Region
 Sub Process_Globals
-	Dim brightness As Int = 20
+	Dim brightness As Int
 	Dim IPAddress As String = "192.168.1.5"
+	Dim requestTimer As Timer
 End Sub
 Sub Globals
 	Dim EditIPButton As Button
@@ -42,19 +44,27 @@ Sub Globals
 	Dim SetYellowButton As Button
 	Dim SetWhiteButton As Button
 	Dim SetOrangeButton As Button
+	Dim AboutButton As Button
+	Dim ParsedData As Map
 End Sub
 Sub Activity_Create(FirstTime As Boolean)
+	requestTimer.Initialize("requestTimer", 100)
 	Activity.LoadLayout("Layout")
 	Activity.Title = "LEDroid Remote for WLED"
 	IPAddressText.Text = IPAddress
 	IPAddressLabel.Text = IPAddress
+	GetCurrentValues
 	Log("Width: " & Activity.Width & ", Height: " & Activity.Height)
 End Sub
 Sub Activity_Resume
-
+	GetCurrentValues
 End Sub
 Sub Activity_Pause (UserClosed As Boolean)
 
+End Sub
+
+Sub requestTimer_Tick
+	requestTimer.Enabled = False ' Fuck this shit, I'm out
 End Sub
 
 Sub EditIPButton_Click
@@ -62,7 +72,6 @@ Sub EditIPButton_Click
 	IPAddressText.Visible = True
 	IPAddressText.Enabled = True
 End Sub
-
 Sub IPAddressText_TextChanged (OldText As String, NewText As String)
 	IPAddress = NewText
 End Sub
@@ -71,13 +80,15 @@ Sub IPAddressText_EnterPressed
 	IPAddressText.Visible = False
 	IPAddressLabel.Visible = True
 	IPAddressLabel.Text = IPAddress
+	GetCurrentValues
 End Sub
 
 Sub PowerButton_Click
 	SendGetRequest("http://" & IPAddress & "/win&T=2")
+	GetCurrentValues
 End Sub
-
-Sub IncreaseBrightnessButton_Click
+Sub IncreaseBrightnessButton_Click	
+	Sleep(100)
 	If brightness < 20 Then
 		brightness = Min(255, brightness + 2)
 	Else
@@ -86,6 +97,7 @@ Sub IncreaseBrightnessButton_Click
 	SendGetRequest("http://" & IPAddress & "/win&T=1&A=" & brightness)
 End Sub
 Sub DecreaseBrightnessButton_Click
+	Sleep(100)
 	If brightness < 20 Then
 		brightness = Max(0, brightness - 2)
 	Else
@@ -119,14 +131,38 @@ Sub SetOrangeButton_Click
 	SendGetRequest("http://" & IPAddress & "/win&T=1&R=255&G=165&B=0")
 End Sub
 
+Sub AboutButton_Click
+	Msgbox("Check out my crappy code at github.com/matthewcabor", "Problems? No, LEDroid.")
+End Sub
+
+Sub GetCurrentValues
+	SendGetRequest("http://" & IPAddress & "/win")
+	requestTimer.Enabled = True ' Wait for BS
+End Sub
+
 Sub SendGetRequest(url As String)
+	requestTimer.Enabled = False ' Stupid timer
 	Dim job As HttpJob
 	job.Initialize("job1", Me)
 	job.Download(url)
 End Sub
 Sub JobDone (job As HttpJob)
 	If job.Success Then
-		Log("Response from server: " & job.GetString)
+		Log("Data: " & job.GetString)
+		Dim xm As Xml2Map
+		xm.Initialize
+		xm.StripNamespaces = True
+		ParsedData = xm.Parse(job.GetString)
+		If ParsedData.IsInitialized Then
+			Try
+				Dim vs As Map = ParsedData.Get("vs")
+				brightness = vs.Get("ac")
+			Catch
+				Log("Error parsing XML: " & LastException.Message)
+			End Try
+		Else
+			Log("No brightness data received.")
+		End If
 	Else
 		Log("Error: " & job.ErrorMessage)
 	End If
